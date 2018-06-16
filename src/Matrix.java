@@ -23,7 +23,7 @@ public class Matrix {
     // Matrix operations
     public void multiply(Object n) {
         // Scalar
-        if(n instanceof Number) {
+        if (n instanceof Number) {
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[i].length; j++) {
                     data[i][j] *= (Double) n;
@@ -32,7 +32,7 @@ public class Matrix {
         }
         // Element wise (Hadamard / Schur product)
         else if (n instanceof Matrix) {
-            if(rows == ((Matrix) n).rows && cols == ((Matrix) n).cols ) {
+            if (rows == ((Matrix) n).rows && cols == ((Matrix) n).cols) {
                 for (int i = 0; i < data.length; i++) {
                     for (int j = 0; j < data[i].length; j++) {
                         data[i][j] *= ((Matrix) n).data[i][j];
@@ -48,7 +48,7 @@ public class Matrix {
 
     public void add(Object n) {
         // Scalar
-        if(n instanceof Number) {
+        if (n instanceof Number) {
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[i].length; j++) {
                     data[i][j] += (Double) n;
@@ -57,7 +57,7 @@ public class Matrix {
         }
         // Element wise
         else if (n instanceof Matrix) {
-            if(rows == ((Matrix) n).rows && cols == ((Matrix) n).cols ) {
+            if (rows == ((Matrix) n).rows && cols == ((Matrix) n).cols) {
                 for (int i = 0; i < data.length; i++) {
                     for (int j = 0; j < data[i].length; j++) {
                         data[i][j] += ((Matrix) n).data[i][j];
@@ -70,6 +70,17 @@ public class Matrix {
             throw new IllegalArgumentException("Object n neither a number of a data!");
         }
     }
+
+    public static Matrix subtract(Matrix m1, Matrix m2) {
+        Matrix result = new Matrix(m1.rows, m1.cols);
+        for (int i = 0; i < result.rows; i++) {
+            for (int j = 0; j < result.cols; j++) {
+                result.setValue(i,j,m1.getValue(i,j) - m2.getValue(i,j));
+            }
+        }
+        return result;
+    }
+
 
     public static Matrix product(Matrix m1, Matrix m2) {
         // Matrix product
@@ -86,7 +97,7 @@ public class Matrix {
             }
             return result;
         } else {
-            throw new IllegalArgumentException("Columns of data " + m1.id + " must match rows of data " + m2.id + "!");
+            throw new IllegalArgumentException("Columns of matrix " + m1.id + " must match rows of matrix " + m2.id + "!");
         }
     }
 
@@ -102,6 +113,24 @@ public class Matrix {
 
     // Handy stuff
 
+    public void apply(ActivationFunction af) {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                data[i][j] = af.apply(data[i][j]);
+            }
+        }
+    }
+
+    public static Matrix apply(Matrix m, ActivationFunction af) {
+        Matrix result = new Matrix(m.rows, m.cols);
+        for (int i = 0; i < m.rows; i++) {
+            for (int j = 0; j < m.cols; j++) {
+                result.data[i][j] = af.apply(m.getValue(i,j));
+            }
+        }
+        return result;
+    }
+
     // Sets all values of a matrix to zero.
     private void initializeZero() {
         for (int i = 0; i < data.length; i++) {
@@ -112,20 +141,38 @@ public class Matrix {
     }
 
     // Set each value of a matrix to a random
-    // one between 0 and upperBound.
-    public void randomize(int upperBound) {
+    // one between -1 and 1.
+    public void randomize() {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
-                data[i][j] = Math.floor(Math.random() * upperBound);
+                data[i][j] = Math.random() * 2 - 1;
             }
         }
+    }
+
+    public static Matrix fromArray(double[] array) {
+        Matrix m = new Matrix(array.length, 1);
+        for (int i = 0; i < array.length; i++) {
+          m.data[i][0] = array[i];
+        }
+        return m;
+    }
+
+    public double[] toArray() {
+        double[] array = new double[data.length * data[0].length];
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                array[i] = data[i][j];
+            }
+        }
+        return array;
     }
 
     // Prints the contents of a matrix.
     public void print(){
         System.out.println("Matrix " + id + " :");
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 System.out.print(data[i][j] + " ");
             }
             System.out.println();
@@ -142,6 +189,14 @@ public class Matrix {
     // by i and j to newValue
     public void setValue(int i, int j, double newValue) {
         this.data[i][j] = newValue;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public int getCols() {
+        return cols;
     }
 
 }
